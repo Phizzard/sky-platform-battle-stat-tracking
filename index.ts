@@ -1,3 +1,3 @@
-import * as limitBreak from "./src/limitbreak";
+import * as battleStats from "./src/battleStats";
 
-limitBreak.main();
+battleStats.main();
