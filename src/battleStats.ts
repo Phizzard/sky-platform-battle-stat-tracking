@@ -19,6 +19,23 @@ export let main = () => {
       message = `${message} ${key}: ${battleStore.stats[key as BattleStoreStatKeys]}\n`;
     });
 
+    const difficultyRank = calculateDifficultyRank();
+    let difficultyRankLabel = `Difficulty:`;
+
+    if (difficultyRank > player.getLevel()) {
+      difficultyRankLabel = `${difficultyRankLabel} Very Hard`;
+    } else if (difficultyRank > player.getLevel() * 0.75) {
+      difficultyRankLabel = `${difficultyRankLabel} Hard`;
+    } else if (difficultyRank > player.getLevel() * 0.5) {
+      difficultyRankLabel = `${difficultyRankLabel} Normal`;
+    } else if (difficultyRank > player.getLevel() * 0.25) {
+      difficultyRankLabel = `${difficultyRankLabel} Easy`;
+    } else {
+      difficultyRankLabel = `${difficultyRankLabel} Very Easy`;
+    }
+
+    message = `${message}\n ${difficultyRankLabel} (${difficultyRank})`;
+
     // Pretty much a debug list of enemies for me
     /*if (battleStore.enemies.size > 0) {
       const prefix = `RIP:`;
@@ -31,6 +48,33 @@ export let main = () => {
     }*/
 
     Debug.messageBox(message);
+  };
+
+  const calculateDifficultyRank = () => {
+    let player = Game.getPlayer() as Actor;
+
+    if (!player) {
+      return 0;
+    }
+
+    if (battleStore?.enemies?.size <= 0) {
+      return 0;
+    }
+
+    let rankValue = 0;
+
+    battleStore.enemies.forEach((enemy) => {
+      let playLevelFactor = Math.floor(player.getLevel() * 0.2);
+      let enemyRank = enemy.level + Math.floor(battleStore.enemies.size * 0.34) - player.getLevel() + playLevelFactor;
+
+      if (enemyRank < -10) {
+        return;
+      }
+
+      rankValue = rankValue + enemyRank;
+    });
+
+    return rankValue;
   };
 
   on("combatState", async (combatEvent) => {
